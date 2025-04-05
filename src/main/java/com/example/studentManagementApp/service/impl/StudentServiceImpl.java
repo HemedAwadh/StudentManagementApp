@@ -5,7 +5,6 @@ import com.example.studentManagementApp.exception.ResourceNotFoundException;
 import com.example.studentManagementApp.repository.StudentRepository;
 import com.example.studentManagementApp.service.StudentService;
 import com.example.studentManagementApp.web.model.StudentProjection;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,48 +18,51 @@ import java.util.List;
  * 3/29/2025
  */
 @Service
-@RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
- private final StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
 
- @Override
- public List<Student> getStudents() {
+    public StudentServiceImpl(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
+    }
 
-  return studentRepository.findAll();
- }
+    @Override
+    public List<Student> getStudents() {
 
- @Override
- public Student getStudentById(Long id) {
+        return studentRepository.findAll();
+    }
 
-  return studentRepository.findById(id)
-          .orElseThrow(()->new ResourceNotFoundException("Student with ID " + id + " not found"));
- }
+    @Override
+    public Student getStudentById(Long id) {
 
- @Override
- public Student updateStudent(Student student, Long id) {
-  Student dbStudent = studentRepository.findById(id)
-          .orElseThrow(()->new ResourceNotFoundException("Student with ID " + id + " not found"));
+        return studentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with ID " + id + " not found"));
+    }
+
+    @Override
+    public Student updateStudent(Student student, Long id) {
+        Student dbStudent = studentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with ID " + id + " not found"));
 //  dbStudent.setFirstName(student.getFirstName());
 //  dbStudent.setLastName(student.getLastName());
-   return studentRepository.save(dbStudent);
- }
+        return studentRepository.save(dbStudent);
+    }
 
- @Override
- public Student addStudent(Student student) {
-  return studentRepository.save(student);
- }
+    @Override
+    public Student addStudent(Student student) {
+        return studentRepository.save(student);
+    }
 
- @Override
- public Student getByEmail(String email) {
-  return studentRepository.findByEmail(email)
-          .orElseThrow(()-> new ResourceNotFoundException("Student with Email" + email +" Not Found"));
+    @Override
+    public Student getByEmail(String email) {
+        return studentRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with Email" + email + " Not Found"));
 
- }
+    }
 
- @Override
- public StudentProjection getPartialStudent(Long id) {
+    @Override
+    public StudentProjection getPartialStudent(Long id) {
 
-  return studentRepository.findStudentProjectionById(id)
-          .orElseThrow(()-> new ResourceNotFoundException("Student with ID " + id + " not found"));
- }
+        return studentRepository.findStudentProjectionById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with ID " + id + " not found"));
+    }
 }

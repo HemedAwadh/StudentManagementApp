@@ -14,12 +14,12 @@ import lombok.Setter;
  * 2025
  * 3/29/2025
  */
-@Entity
-@Table(name="STUDENTS")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name="STUDENTS")
 public class Student {
  @Id
  @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -79,35 +80,74 @@ class StudentControllerTest {
     @Test
     @DisplayName("Test update Students")
     void updateStudent() throws Exception {
-        //given
+        // Given
         Student student = new Student();
+        student.setEmail("jane.doe@example.org");
+        student.setFirstName("Jane");
         student.setId(1L);
-        student.setFirstName("John");
+        student.setLastName("Doe");
+        student.setRegNumber("42");
+        when(studentService.updateStudent(Mockito.any(), Mockito.<Long>any())).thenReturn(student);
 
-        when(studentService.updateStudent(student, student.getId())).thenReturn(student);
-        String studentJson = new ObjectMapper().writeValueAsString(student);
-
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .put("/api/v1/students/1")
+        Student student2 = new Student();
+        student2.setEmail("jane.doe@example.org");
+        student2.setFirstName("Jane");
+        student2.setId(1L);
+        student2.setLastName("Doe");
+        student2.setRegNumber("42");
+        String content = (new ObjectMapper()).writeValueAsString(student2);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.put("/api/v1/students/{id}", 1L)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(studentJson);
-        //When && assert
+                .content(content);
+
+        // When and Assert
         MockMvcBuilders.standaloneSetup(studentController)
                 .build()
-                .perform(getRequest)
+                .perform(requestBuilder)
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.firstName").value("John"));
-
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"id\":1,\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"jane.doe@example.org\",\"regNumber\":\"42\"}"));
 
     }
 
     @Test
-    void createStudent() {
+    @DisplayName("Test createStudent(Student)")
+    void testCreateStudent() throws Exception {
+        // Arrange
+        Student student = new Student();
+        student.setEmail("jane.doe@example.org");
+        student.setFirstName("Jane");
+        student.setId(1L);
+        student.setLastName("Doe");
+        student.setRegNumber("42");
+        when(studentService.addStudent(Mockito.any())).thenReturn(student);
+
+        Student student2 = new Student();
+        student2.setEmail("jane.doe@example.org");
+        student2.setFirstName("Jane");
+        student2.setId(1L);
+        student2.setLastName("Doe");
+        student2.setRegNumber("42");
+        String content = (new ObjectMapper()).writeValueAsString(student2);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/api/v1/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content);
+
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(studentController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"id\":1,\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"jane.doe@example.org\",\"regNumber\":\"42\"}"));
     }
 
     @Test
+    @DisplayName("Test get student By email")
     void getStudentByEmail() {
     }
 
