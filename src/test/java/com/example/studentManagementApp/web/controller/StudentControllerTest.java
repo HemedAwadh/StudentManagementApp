@@ -2,10 +2,12 @@ package com.example.studentManagementApp.web.controller;
 
 import com.example.studentManagementApp.domain.Student;
 import com.example.studentManagementApp.service.StudentService;
+import com.example.studentManagementApp.web.model.StudentProjection;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -19,6 +21,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -36,82 +39,158 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class StudentControllerTest {
     @Autowired
     private StudentController studentController;
+
     @MockitoBean
     private StudentService studentService;
 
     @Test
-    @DisplayName("Test get All Students")
-    void getAllStudents() throws Exception {
-        //given
-        when(studentService.getStudents()).thenReturn(new ArrayList<>());
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get("/api/v1/students");
-        //When & Assert
-        MockMvcBuilders.standaloneSetup(studentController)
-                .build()
-                .perform(getRequest)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-
-
-    }
-
-    @Test
-    @DisplayName("Test get Students By id")
-    void getStudentById() throws Exception {
-        //given
+    @DisplayName("Test createStudent(Student)")
+    void testCreateStudent() throws Exception {
+        // Arrange
         Student student = new Student();
+        student.setEmail("jane.doe@example.org");
+        student.setFirstName("Jane");
         student.setId(1L);
-        student.setFirstName("John");
-        when(studentService.getStudentById(1L)).thenReturn(student);
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get("/api/v1/students/1");
-        //When && assert
-        MockMvcBuilders.standaloneSetup(studentController)
-                .build()
-                .perform(getRequest)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.firstName").value("John"));
+        student.setLastName("Doe");
+        student.setRegNumber("42");
+        when(studentService.addStudent(Mockito.any())).thenReturn(student);
 
-
-    }
-
-    @Test
-    @DisplayName("Test update Students")
-    void updateStudent() throws Exception {
-        //given
-        Student student = new Student();
-        student.setId(1L);
-        student.setFirstName("John");
-
-        when(studentService.updateStudent(student, student.getId())).thenReturn(student);
-        String studentJson = new ObjectMapper().writeValueAsString(student);
-
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .put("/api/v1/students/1")
+        Student student2 = new Student();
+        student2.setEmail("jane.doe@example.org");
+        student2.setFirstName("Jane");
+        student2.setId(1L);
+        student2.setLastName("Doe");
+        student2.setRegNumber("42");
+        String content = (new ObjectMapper()).writeValueAsString(student2);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/api/v1/students")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(studentJson);
-        //When && assert
+                .content(content);
+
+        // Act and Assert
         MockMvcBuilders.standaloneSetup(studentController)
                 .build()
-                .perform(getRequest)
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"id\":1,\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"jane.doe@example.org\",\"regNumber\":\"42\"}"));
+    }
+
+
+    @Test
+    @DisplayName("Test getStudentById(Long)")
+    void testGetStudentById() throws Exception {
+        // Arrange
+        Student student = new Student();
+        student.setEmail("jane.doe@example.org");
+        student.setFirstName("Jane");
+        student.setId(1L);
+        student.setLastName("Doe");
+        student.setRegNumber("42");
+        when(studentService.getStudentById(Mockito.<Long>any())).thenReturn(student);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/v1/students/{id}", 1L);
+
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(studentController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"id\":1,\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"jane.doe@example.org\",\"regNumber\":\"42\"}"));
+    }
+
+
+    @Test
+    @DisplayName("Test updateStudent(Long, Student)")
+    void testUpdateStudent() throws Exception {
+        // Given
+        Student student = new Student();
+        student.setEmail("jane.doe@example.org");
+        student.setFirstName("Jane");
+        student.setId(1L);
+        student.setLastName("Doe");
+        student.setRegNumber("42");
+        when(studentService.updateStudent(Mockito.any(), Mockito.<Long>any())).thenReturn(student);
+
+        Student student2 = new Student();
+        student2.setEmail("jane.doe@example.org");
+        student2.setFirstName("Jane");
+        student2.setId(1L);
+        student2.setLastName("Doe");
+        student2.setRegNumber("42");
+        String content = (new ObjectMapper()).writeValueAsString(student2);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.put("/api/v1/students/{id}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content);
+
+        // When and Assert
+        MockMvcBuilders.standaloneSetup(studentController)
+                .build()
+                .perform(requestBuilder)
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.firstName").value("John"));
-
-
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"id\":1,\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"jane.doe@example.org\",\"regNumber\":\"42\"}"));
     }
 
     @Test
-    void createStudent() {
+    @DisplayName("Test getStudentByPartialId(Long)")
+    void testGetStudentByPartialId() throws Exception {
+        // Arrange
+        when(studentService.getPartialStudent(Mockito.<Long>any())).thenReturn(mock(StudentProjection.class));
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/v1/students/partial/{id}", 1L);
+        requestBuilder.accept("https://example.org/example");
+
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(studentController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().is(406));
+    }
+
+
+    @Test
+    @DisplayName("Test getStudentByEmail(String)")
+    void testGetStudentByEmail() throws Exception {
+        // Arrange
+        Student student = new Student();
+        student.setEmail("jane.doe@example.org");
+        student.setFirstName("Jane");
+        student.setId(1L);
+        student.setLastName("Doe");
+        student.setRegNumber("42");
+        when(studentService.getByEmail(Mockito.any())).thenReturn(student);
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/v1/students/getByEmail/{email}",
+                "jane.doe@example.org");
+
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(studentController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.content()
+                        .string(
+                                "{\"id\":1,\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"jane.doe@example.org\",\"regNumber\":\"42\"}"));
     }
 
     @Test
-    void getStudentByEmail() {
-    }
+    @DisplayName("Test getAllStudents()")
+    void testGetAllStudents() throws Exception {
+        // Arrange
+        when(studentService.getStudents()).thenReturn(new ArrayList<>());
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/api/v1/students");
 
-    @Test
-    void getStudentByPartialId() {
+        // Act and Assert
+        MockMvcBuilders.standaloneSetup(studentController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
+                .andExpect(MockMvcResultMatchers.content().string("[]"));
     }
 }
