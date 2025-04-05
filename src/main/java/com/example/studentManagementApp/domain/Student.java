@@ -1,7 +1,9 @@
 package com.example.studentManagementApp.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -16,6 +18,8 @@ import lombok.Setter;
 @Table(name="STUDENTS")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Student {
  @Id
  @GeneratedValue(strategy = GenerationType.IDENTITY)
