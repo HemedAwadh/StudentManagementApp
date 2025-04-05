@@ -35,7 +35,8 @@ import static org.mockito.Mockito.when;
 class StudentControllerTest {
     @Autowired
     private StudentController studentController;
-    @MockBean
+
+    @MockitoBean
     private StudentService studentService;
 
     @Test
